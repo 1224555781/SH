@@ -365,3 +365,5 @@ FodyWeavers.xsd
 /x64
 
 *.onnx
+
+/SH/OpenCV/opencv

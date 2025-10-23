@@ -1,4 +1,3 @@
-[BEGIN]
 import argparse
 import csv
 import os
@@ -42,7 +41,10 @@ class Recorder:
             print("[REC] Segment started. Move the mouse and left-click to finish...")
 
     def end_segment(self):
+        print("[REC] Ending segment...", self.lock)
+        
         with self.lock:
+            print("[REC] Ending segment233333...", self.lock)
             if not self.recording:
                 return
             if not self.segment_buffer:
@@ -63,9 +65,9 @@ class Recorder:
                     sf = 1 if i == 0 else 0
                     ef = 1 if i == n - 1 else 0
                     w.writerow([time_ms, x, y, tx, ty, self.target_w, sf, ef])
-            print(f"[REC] Segment saved: {{n}} samples -> {{self.out_path}}")
+            print(f"[REC] Segment saved: {n} samples -> {self.out_path}")
             self.recording = False
-            self.segment_buffer = []
+            self.segment_buffer = []    
             self.target_xy = None
 
     def on_click(self, x, y, button, pressed):
@@ -75,8 +77,8 @@ class Recorder:
             with self.lock:
                 if self.recording and self.target_xy is None:
                     self.target_xy = (float(x), float(y))
-                    print(f"[REC] Target captured at click: {{x}}, {{y}})")
-
+                    print(f"[REC] Target captured at click: {x}, {y})")
+                    
     def polling_loop(self):
         dt = 1.0 / self.fps
         while not self.quit_flag:
@@ -84,17 +86,18 @@ class Recorder:
             if self.recording:
                 x, y = pyautogui.position()
                 now_ms = int(round((time.time() - self.segment_start_ts) * 1000.0))
-                with self.lock:
-                    self.segment_buffer.append([now_ms, float(x), float(y)])
-                    if self.target_xy is not None and len(self.segment_buffer) >= 2:
-                        pass
+               
+                print(f"[REC] Target captured at mouse move: {x}, {y})")
+                self.segment_buffer.append([now_ms, float(x), float(y)])
+                if self.target_xy is not None and len(self.segment_buffer) >= 2:
+                    pass
             elapsed = time.time() - t0
             to_sleep = dt - elapsed
             if to_sleep > 0:
                 time.sleep(to_sleep)
-            with self.lock:
-                if self.recording and self.target_xy is not None and len(self.segment_buffer) >= 2:
-                    self.end_segment()
+           
+            if self.recording and self.target_xy is not None and len(self.segment_buffer) >= 2:
+                self.end_segment()
 
     def run(self):
         mouse_listener = mouse.Listener(on_click=self.on_click)
@@ -103,11 +106,13 @@ class Recorder:
         poller = threading.Thread(target=self.polling_loop, daemon=True)
         poller.start()
 
+
+
         print("Hotkeys: Ctrl+Alt+S to start, then left-click to finish. Ctrl+Alt+Q to quit.")
-        print(f"Output: {{self.out_path}}, FPS={{self.fps}}, target_w={{self.target_w}}")
+        print(f"Output: {self.out_path}, FPS={self.fps}, target_w={self.target_w}")
 
         with keyboard.GlobalHotKeys({
-            '<ctrl>+<alt>+s': self.start_segment,
+            '<ctrl>+s': self.start_segment,
             '<ctrl>+<alt>+q': self._quit_action
         }) as h:
             h.join()
@@ -138,4 +143,3 @@ if __name__ == "__main__":
     except Exception:
         pass
     main()
-[END]
