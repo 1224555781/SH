@@ -1,0 +1,8 @@
+[BEGIN]
+numpy>=1.24.0
+pynput>=1.7.7
+pyautogui>=0.9.54
+# LSTM (optional). If not needed, you can skip installing torch.
+torch>=2.1.0; platform_system!="Darwin" or platform_machine!="arm64"
+# For macOS arm64, consider conda-forge or official instructions for torch installation.
+[END]
